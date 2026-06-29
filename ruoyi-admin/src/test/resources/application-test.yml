@@ -1,0 +1,16 @@
+--- # 集成测试 profile(配合 @ActiveProfiles({"dev","test"}))
+# 继承 application-dev.yml 的全部 enabled:false 开关与 redisson 块,本文件只做极少量覆盖。
+# 连接坐标不写死在此,由 TestcontainersBase 的 @DynamicPropertySource 动态注入。
+# ⚠️ 不要在此关 snail-ai.open-api —— 会缺 bean 导致启动失败(见 docs/测试规范.md §7 #3)。
+spring:
+  datasource:
+    dynamic:
+      # p6spy 会包装容器 URL,测试关闭(§7 #6)
+      p6spy: false
+  ai:
+    mcp:
+      server:
+        enabled: false
+
+captcha:
+  enable: false
