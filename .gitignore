@@ -53,3 +53,5 @@ nbdist/
 
 application-local.yml
 application-ga.yml
+
+web/
