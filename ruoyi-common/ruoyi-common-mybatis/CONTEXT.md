@@ -51,8 +51,8 @@ Policy 的**独立入参**(不进快照),枚举 SELECT / UPDATE / DELETE,各自�
 _Avoid_: isSelect 布尔(旧写法;升级成枚举正是为了让「连接语义」成为显式输入而非隐藏 flag)。
 
 **Data Scope Service (sdss / IDataScopeService)**:
-「范围展开器」——给定 roleId 或 deptId,查库返回一串逗号分隔的部门 id(如 `"100,101,102"`,无则 `"-1"`),供模板拼进 `dept_id IN ( ... )`。只有 2 个**动态范围**(CUSTOM 查 `sys_role_dept`、DEPT_AND_CHILD 展开部门树)用它;静态范围(本部门/仅本人)直接从快照写出、不碰它。bean 名 `sdss`。深化后其 2 方法接口提升到 `ruoyi-api`(`IDataScopeService`),作为**类型化 SPI 注入 policy**,使 `common-mybatis` 无需依赖 `ruoyi-system`、且 policy 不再静态触达 Spring 容器。
-_Avoid_: 「数据权限服务」(太泛)。
+「范围展开器」——给定 roleId 或 deptId,查库返回一串逗号分隔的部门 id(如 `"100,101,102"`,无则 `"-1"`),供模板拼进 `dept_id IN ( ... )`。**凡 SpEL 模板文本引用 `@sdss` 的 scope 都经它展开**——当前是 CUSTOM(`getRoleCustom` 查 `sys_role_dept`)、DEPT_AND_CHILD 与 DEPT_AND_CHILD_OR_SELF(后两者共用 `getDeptAndChild` 展开部门树);其余 scope(DEPT/SELF)静态写出、不碰它。注意 sdss **只有 2 个方法却被 3 个 scope 引用**(`getDeptAndChild` 被第 4、6 档共用)——「方法数」与「调用它的 scope 数」是两码事,别再把 2 当成 scope 数(第 6 档是**动态部门展开 `OR` 静态本人**的混合范围,二分「动态/静态」容纳不下它)。bean 名 `sdss`。深化后其 2 方法接口提升到 `ruoyi-api`(`IDataScopeService`),作为**类型化 SPI 注入 policy**,使 `common-mybatis` 无需依赖 `ruoyi-system`、且 policy 不再静态触达 Spring 容器。
+_Avoid_: 「数据权限服务」(太泛);把「sdss 的方法数(2)」当成「调用 sdss 的 scope 数(3)」。
 
 **Recursion Guard (RecursionGuard)**:
 注入给 policy 的「防递归开关」:`sdss` 自身要跑 `sys_role_dept`/`sys_dept` 查询,而这些查询又会触发数据权限拦截器 → 再调 sdss → 死循环;故展开范围前临时关掉数据权限。生产委托 `DataPermissionHelper.ignore`,测试给直接执行的 no-op。
