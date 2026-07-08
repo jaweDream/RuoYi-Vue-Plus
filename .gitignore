@@ -54,4 +54,7 @@ nbdist/
 application-local.yml
 application-ga.yml
 
+# 本机 dev MCP 配置(含本机绝对路径与本地 Redis 密码,不入库)
+.mcp.json
+
 web/
