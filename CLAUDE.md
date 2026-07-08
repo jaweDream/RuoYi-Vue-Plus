@@ -10,13 +10,28 @@ RuoYi-Vue-Plus **6.X**（当前分支 `future/6.X-jar`）后台管理系统的�
 
 ## 构建与运行
 
-⚠️ 本项目需 **JDK 21**；本机用 **jenv** 管理多版本（装了 export 插件会自动导出 `JAVA_HOME`）。跑 Maven 前先 `java -version` 确认是 21，不是则用 jenv 切换（`jenv versions` 看可用版本，`jenv global <ver>` 或项目内 `jenv local <ver>`），不要在文档/命令里写死版本号或 JDK 路径。`mvnw` 无执行权限，统一用 `sh ./mvnw`。
+### JDK 与 Maven
 
-- 首次把多模块装入本地仓库（reactor 模块未预装）：`sh ./mvnw -pl ruoyi-admin -am install -DskipTests`
-- 启动应用：在 IDEA 直接运行 `ruoyi-admin` 的 `org.dromara.DromaraApplication`（main 类）。Profile `local`/`dev`(默认)/`prod`，由 pom `profiles.active` 决定。
+**JDK 策略：高版本 JDK + `maven.compiler.release` 适配，不用 jenv、不必装/切 JDK 21。** pom `<java.version>21</java.version>` + `<release>${java.version}</release>` 让高版本 JDK 编译出 **release-21 字节码**，故在本机系统 JDK（当前 Homebrew OpenJDK 26 / IDEA JBR 25 均可）上直接 build/run 即可，**不要**再前置 `export JAVA_HOME=.../JBR`、`jenv` 或试图找 JDK 21。`mvnw` 无执行权限，统一用 `sh ./mvnw`。
+
+- 首次把多模块装入本地仓库（reactor 模块未预装）：`sh ./mvnw -pl ruoyi-admin -am install -DskipTests` → 产出可执行 fat jar `ruoyi-admin/target/ruoyi-admin.jar`。
+- 启动后端：IDEA 直接运行 `ruoyi-admin` 的 `org.dromara.DromaraApplication`；**或无头** `java -jar ruoyi-admin/target/ruoyi-admin.jar --spring.profiles.active=dev`（~8s，Jetty 监听 **:8080**）。改过 yml/上游源码后需先重 `install` 再 `java -jar`（jar 内嵌 yml）。Profile `local`/`dev`(默认)/`prod` 由 pom `profiles.active` 决定。
 - 扩展服务各为独立 Spring Boot 应用，需单独运行各自 main 类：`ruoyi-monitor-admin`(`MonitorAdminApplication`，SpringBoot Admin 监控)、`ruoyi-snailjob-server`(`SnailJobServerApplication`，分布式任务调度中心)、`ruoyi-snailai-server`(`SnailAiServerApplication`)。
 - 注：`.run/*.run.xml` 是 **Docker 镜像构建**配置（`type="docker-deploy"` + `buildOnly=true`，指向各模块 Dockerfile），**不是**应用启动配置。
-- DB schema：`script/sql/ry_vue.sql`（MySQL 8 为准）；另有 `script/sql/{oracle,postgres,sqlserver}` 异构脚本与 `script/sql/update` 增量脚本。
+
+### 本机数据源（当前分支实际跑在 PostgreSQL）
+
+本机开发环境已从 MySQL 切到**本地 PostgreSQL** `ry-vue`（工作区改动：`application-dev.yml` master 数据源换 `org.postgresql.Driver` + `jdbc:postgresql://localhost:5432/ry-vue`、user `jarvey`、trust 空密码；`ruoyi-admin/pom.xml` 启用 `org.postgresql:postgresql` 驱动）。Redis 本机 `:6379`、密码 `ruoyi123`。
+
+- 建库脚本用 **`script/sql/postgres/postgres_ry_*.sql`**（`_vue`/`_workflow`/`_ai`/`_chain`/`_job`）；MySQL 版在 `script/sql/*.sql`，另有 `{oracle,sqlserver}` 异构脚本与 `script/sql/update` 增量脚本。chain 的 postgres 版 `postgres_ry_chain.sql` 由 `ry_chain.sql` 移植（`bigint→int8`、`datetime→timestamp`、`decimal(65,0)→numeric(65,0)`、`sysdate()→now()`、内联 comment 外移为 `comment on`、`key→create [unique] index`、去掉 MySQL 前缀索引长度）。
+- **db MCP**：项目根 `.mcp.json` 注册 `db-ry-vue`——用 `node@20` 跑本地 `universal-db-mcp` 连本地 PG `ry-vue`（`readwrite`）。MCP 在 **Claude Code 会话启动时加载**，新增/改动 `.mcp.json` 后须重载会话并批准该项目 MCP 才生效。
+
+### 前端 plus-ui（独立仓库）
+
+前端在 **`/Users/jarvey/IdeaProjects/plus-ui`**，是 `plus-ui-react`（UmiJS/max + **Vite 模式** + React 19，pnpm，`engines: node>=20`），**不在本仓库**。
+
+- 启动：`cd /Users/jarvey/IdeaProjects/plus-ui`，本机默认 node 26 装原生依赖易翻车，用 **node@20** 更稳：`export PATH="/opt/homebrew/opt/node@20/bin:$PATH" && pnpm install && pnpm dev`。dev 端口 **8000**，代理 `/dev-api` → `http://localhost:8080`（见 `vite.config.ts`/`.env.development`）。默认账号 `admin / admin123`。
+- **验证坑（易误判为故障）**：`umi dev` 实为 **Vite 模式**（`config.vite` 真值使 `enableVite=true`；日志里的 `[MFSU][eager] worker init` 是 max 默认 eager worker 的干扰项，**不是** webpack）。Vite 的 HTML 兜底中间件**只对带 `Accept: text/html` 的请求**返回首页——用 `curl http://localhost:8000/`（默认 `Accept: */*`）会得到 **404**，这是探测假象；加 `-H 'Accept: text/html'` 即 200，或直接用浏览器/打 `/dev-api/*` 代理验证。`pnpm build` 走 Vite/Rollup 产出 `dist/`。
 
 ## 测试
 
