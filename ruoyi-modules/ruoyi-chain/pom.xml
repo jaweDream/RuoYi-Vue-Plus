@@ -3,26 +3,25 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>ruoyi-vue-plus</artifactId>
         <groupId>org.dromara</groupId>
+        <artifactId>ruoyi-modules</artifactId>
         <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>ruoyi-modules</artifactId>
+
+    <artifactId>ruoyi-chain</artifactId>
     <packaging>pom</packaging>
 
     <description>
-        ruoyi-modules 业务模块
+        链资产模块聚合:api 为链无关 SPI 与模型,evm/solana/aptos 为链适配器,biz 为业务编排层
     </description>
 
     <modules>
-        <module>ruoyi-demo</module>
-        <module>ruoyi-gen</module>
-        <module>ruoyi-job</module>
-        <module>ruoyi-system</module>
-        <module>ruoyi-workflow</module>
-        <module>ruoyi-ai</module>
-        <module>ruoyi-chain</module>
+        <module>ruoyi-chain-api</module>
+        <module>ruoyi-chain-evm</module>
+        <module>ruoyi-chain-solana</module>
+        <module>ruoyi-chain-aptos</module>
+        <module>ruoyi-chain-biz</module>
     </modules>
 
 </project>

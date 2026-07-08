@@ -104,6 +104,24 @@
             <artifactId>ruoyi-workflow</artifactId>
         </dependency>
 
+        <!--  链资产模块(biz 为业务层,evm/solana/aptos 为可插拔链适配器)  -->
+        <dependency>
+            <groupId>org.dromara</groupId>
+            <artifactId>ruoyi-chain-biz</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.dromara</groupId>
+            <artifactId>ruoyi-chain-evm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.dromara</groupId>
+            <artifactId>ruoyi-chain-solana</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.dromara</groupId>
+            <artifactId>ruoyi-chain-aptos</artifactId>
+        </dependency>
+
         <!-- Spring Boot Admin 客户端 -->
         <dependency>
             <groupId>de.codecentric</groupId>

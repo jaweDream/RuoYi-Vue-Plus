@@ -36,7 +36,7 @@ RuoYi-Vue-Plus **6.X**（当前分支 `future/6.X-jar`）后台管理系统的�
 
 - **ruoyi-admin** — Web 入口（`DromaraApplication`），聚合业务模块依赖（`ruoyi-system`/`ruoyi-job`/`ruoyi-ai`/`ruoyi-demo`/`ruoyi-workflow`；`ruoyi-gen` 仅在 Maven `gen` profile 下引入，默认构建不含代码生成器）。`org.dromara.web` 下是登录认证：`AuthController`/`SysLoginService` + `IAuthStrategy` 多登录策略（password/sms/email/social/xcx）、验证码。集成测试也在此模块。
 - **ruoyi-common** — 24 个能力 starter，按需被业务模块依赖；关键：`-core`(工具/基础 domain/异常)、`-mybatis`(BaseEntity/BaseMapperPlus/数据权限)、`-satoken`(登录鉴权)、`-redis`(Redisson/RedisUtils/缓存/Lock4j)、`-web`(BaseController/全局异常)、`-excel`、`-oss`、`-log`、`-json`、`-translation`、`-sensitive`、`-encrypt`、`-doc`(SpringDoc)、`-security`，以及 `-mail`/`-sms`/`-social`/`-mqtt`/`-elasticsearch`/`-ai`/`-mcp`/`-push`/`-job`；`-bom` 统一版本。
-- **ruoyi-modules** — 业务模块：`ruoyi-system`(用户/角色/部门/菜单/字典/OSS/客户端等核心)、`ruoyi-workflow`(WarmFlow 审批)、`ruoyi-ai`(Spring AI)、`ruoyi-gen`(代码生成器)、`ruoyi-job`(SnailJob 客户端)、`ruoyi-demo`(功能案例)。注：`ruoyi-generator/` 仅为旧构建残留（无 pom/src），活动的生成器是 `ruoyi-gen`。
+- **ruoyi-modules** — 业务模块：`ruoyi-system`(用户/角色/部门/菜单/字典/OSS/客户端等核心)、`ruoyi-workflow`(WarmFlow 审批)、`ruoyi-ai`(Spring AI)、`ruoyi-gen`(代码生成器)、`ruoyi-job`(SnailJob 客户端)、`ruoyi-demo`(功能案例)、`ruoyi-chain`(链资产，嵌套聚合模块：`-api` 链无关 SPI/模型 + `-evm`/`-solana`/`-aptos` 协议适配器 + `-biz` 业务编排层，设计见该模块 CONTEXT.md，SQL 为 `script/sql/ry_chain.sql`(MySQL) / `script/sql/postgres/postgres_ry_chain.sql`(PG))。注：`ruoyi-generator/` 仅为旧构建残留（无 pom/src），活动的生成器是 `ruoyi-gen`。
 - **ruoyi-extend** — 独立部署的 server：`ruoyi-monitor-admin`、`ruoyi-snailjob-server`、`ruoyi-snailai-server`。
 - **ruoyi-api** — 跨模块解耦的 API/模型层（`org.dromara.{system,workflow}.api` + `system/api/model`），供模块间调用而不直接依赖实现。
 

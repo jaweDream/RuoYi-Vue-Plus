@@ -457,6 +457,33 @@
                 <version>${revision}</version>
             </dependency>
 
+            <!-- 链资产模块 -->
+            <dependency>
+                <groupId>org.dromara</groupId>
+                <artifactId>ruoyi-chain-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.dromara</groupId>
+                <artifactId>ruoyi-chain-biz</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.dromara</groupId>
+                <artifactId>ruoyi-chain-evm</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.dromara</groupId>
+                <artifactId>ruoyi-chain-solana</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.dromara</groupId>
+                <artifactId>ruoyi-chain-aptos</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
