@@ -1,0 +1,5 @@
+# OSS 配置回源 SPI 为单方法 reload 全量重建
+
+回源接口 `OssConfigProvider` 不做细粒度方法(按 configKey 单键查询、单查默认键),只有一个 `reload()`:从 DB 全量重建配置缓存(`sys_oss_config` 哈希 + `DEFAULT_CONFIG_KEY`),system 侧实现直接委托启动预热 `init()`。「全量重建」指遍历全表逐项覆盖写——**只增写、不清理** DB 已无的残留项;默认键并非严格重建:`init()` 仅在存在 status=YES 行时覆盖写 `DEFAULT_CONFIG_KEY`,DB 无任何启用行时旧默认键不更新也不删除、靠 TTL 过期(窗口内无参 `instance()` 是 stale hit,不触发 miss 自愈)。正常运维中残留由配置变更事件(`OssConfigChangeEvent`)的 evict 负责,异常残留(事件丢失、绕过管理端直改 DB)靠本次同步加上的缓存 TTL 兜底(`CacheNames.SYS_OSS_CONFIG` 改为 `sys_oss_config#30d`,`DEFAULT_CONFIG_KEY` 两个写点加 `Duration.ofDays(30)`)。
+
+动因:缓存载荷是序列化的 `SysOssConfig` **实体** JSON,读取方(`OssFactory`)按字段子集解析成 `OssProperties`——细粒度方法意味着出现第二条缓存写路径,实体序列化细节(空字段处理、字段增减)极易与 `init()` 漂移;单方法让「启动预热」与「运行时自愈」共用唯一写路径,且 `sys_oss_config` 表极小(通常个位数行),全量重建代价可忽略。代价:`OssFactory` 回源后需二次读缓存;不存在的 configKey 每次 miss 都会触发一次全量重建,且这是**运行时路径**——`instance(configKey)` 由 `sys_oss.service` 驱动,出现在文件下载/删除/URL 签名等数据面(如 `SysOssServiceImpl#download`);历史文件指向已删除配置时,对该文件的每次访问都会白跑一次回源(锁内 double-check 只防并发踩踏,不防串行重复)。当前接受该代价、不做负缓存/限频:全表查询极小,失败最终抛异常可见,属应被修复的异常态;若实际出现「死配置热点访问」再立防抖工单。
